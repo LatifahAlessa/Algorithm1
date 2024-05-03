@@ -1,0 +1,30 @@
+pseudocode algorithm for finding the composition of an optimal allocation of assets using Brute Force Paradigm: 
+
+function bruteForceOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
+  // Initialize variables
+  Portfolio optimalPortfolio = null;
+  double maxReturn = 0;
+
+  // Iterate over all possible combinations of asset quantities
+  for (int i = 0; i <= assets.get(0).units; i++) {
+    for (int j = 0; j <= assets.get(1).units; j++) {
+      for (int k = 0; k <= assets.get(2).units; k++) {
+        // Check if the current combination is valid
+        if (i + j + k == totalInvestment) {
+          // Create a new portfolio with the current combination
+          Portfolio portfolio = new Portfolio(i, j, k);
+          portfolio.calculatePortfolioEfficiency(assets, totalInvestment);
+
+          // Check if the current portfolio is better than the current optimal portfolio
+          if (portfolio.risk <= riskTolerance && portfolio.expectedReturn > maxReturn) {
+            maxReturn = portfolio.expectedReturn;
+            optimalPortfolio = portfolio;
+          }
+        }
+      }
+    }
+  }
+
+  // Return the optimal portfolio
+  return optimalPortfolio;
+}
