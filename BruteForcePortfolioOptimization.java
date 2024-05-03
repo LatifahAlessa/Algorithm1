@@ -1,19 +1,61 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.*;
 
 public class BruteForcePortfolioOptimization{
-    static int[] optimalAllocation = {0,0,0}; //static array to keep the best allocation
-    static double expectedProtfolioReturn; //static value to keep the maximam expected Protfolio Return
-    static double portfolioRiskLevel; //static value to keep the risk level 
+
+private static class Asset {
+        String id;
+        double expectedReturn;
+        double individualrisk;
+        double units;
+
+        public Asset(String id, double expectedReturn, double risk, double units) {
+            this.id = id;
+            this.expectedReturn = expectedReturn;
+            this.individualrisk = risk;
+            this.units = units;
+        }
+    }
+    // Portfolio class representing each client
+    private static class Portfolio {
+        int[] allocation; // Percentage how much of each asset in total investment
+        double expectedReturn;
+        double risk;
+
+    public Portfolio(int asset1, int asset2, int asset3) {
+        allocation = new int[3];
+        allocation[0] = asset1 ;
+        allocation[1] = asset2 ;
+        allocation[2] = asset3 ;
+    }
+
+    // Check if sum of allocation percents add up to 100 
+    /*public boolean isValid(double totalInvestment) {
+        double sum = 0.0;
+        for (int i = 0; i < allocation.length; i++) {
+            sum += allocation[i];
+        }
+        return Math.abs(sum - 1.0) < 0.000001;//As long as the absolute difference is less than 0.000001, the weight sum is considered valid. 
+    }*/
+
+    public void calculatePortfolioEfficiency(List<Asset> assets,int totalInvestment) {
+        expectedReturn = 0.0;
+        risk = 0.0;
+        for (int i = 0; i < assets.size(); i++) {
+            expectedReturn += allocation[i] * assets.get(i).expectedReturn; //return of each asset in portfolio allocation
+            risk += allocation[i] * assets.get(i).individualrisk; //risk of each asset in portfolio allocation
+        }
+        expectedReturn = expectedReturn/totalInvestment;
+        risk = risk/totalInvestment;
+    }
+}
  
      public static void main(String[] args) {
       String fileName = "investment.txt"; 
       //Initialize arrays for 3 assets
-      String[] assetIds = new String[3];
-      double[] expectedReturns = new double[3];
-      double[] riskLevels = new double[3];
-      int[] units = new int[3]; //to keep the units(quantity)
+      List<Asset> assets = new ArrayList<>();
       int totalInvestment = 0;
       double riskTolerance = 0;
       try { //reading input from file
@@ -28,12 +70,8 @@ public class BruteForcePortfolioOptimization{
              double expectedReturn = Double.parseDouble(parts[1]);
              double riskLevel = Double.parseDouble(parts[2]);
              int quantity = Integer.parseInt(parts[3]);
-
-             //Store data in arrays
-             assetIds[index] = id;
-             expectedReturns[index] = expectedReturn;
-             riskLevels[index] = riskLevel;
-             units[index] = quantity;
+             //Store
+             assets.add(new Asset(id, expectedReturn, riskLevel, quantity));
              index++;
          }
          //Read total investment and risk tolerance level
@@ -47,54 +85,48 @@ public class BruteForcePortfolioOptimization{
          reader.close();
          } catch (IOException e) {
             e.printStackTrace();
-         }         
+         }
+                  
          //calling the brute-force method
-         bruteForceOptimizePortfolio(expectedReturns, riskLevels, units, totalInvestment, riskTolerance);
+         Portfolio optimalPortfolio =bruteForceOptimizePortfolio(assets, totalInvestment, riskTolerance);
          
          //printing the results
          System.out.println("Optimal Allocation");
-         for (int i =0; i< assetIds.length; i++)   {
-             System.out.println(assetIds[i] +": "+optimalAllocation[i]+" units");
+         for (int i =0; i< assets.size(); i++)   {
+             System.out.printf("%s: %d units\n",
+                    assets.get(i).id, optimalPortfolio.allocation[i]);
          }
-         System.out.println("  Expected Protfolio Return: " + expectedProtfolioReturn);
-         System.out.println("Portfolio Risk Level: " + portfolioRiskLevel);
+         System.out.printf("Expected Portfolio Return: %.4f\n", optimalPortfolio.expectedReturn);
+         System.out.printf("Portfolio Risk Level: %.4f\n", optimalPortfolio.risk);
      }
      
-     public static void bruteForceOptimizePortfolio(double[] expectedReturns, double[] riskLevels,int [] units, int totalInvestment, double riskTolerance) {
-       double risk = 0, expReturn=0; //variables to keep the risk and  expected return of every new allocation
-       int k =0;
-       for (int i =0; i<=units[0]; i++)  { //first loop for the first asset
-          for (int j =0; j<=units[1]; j++)  { //second loop for the second asset
+     private static Portfolio bruteForceOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
+        Portfolio optimalPortfolio = null;
+        double maxReturn = 0;
+        Portfolio portfolio = new Portfolio(0, 0, 0);
+        int k =0;
+        
+        for (int i =0; i<=assets.get(0).units; i++)  { //first loop for the first asset
+          for (int j =0; j<=assets.get(1).units; j++)  { //second loop for the second asset
              if (i+j >totalInvestment)
                 break;
-                
+                            
              k = totalInvestment - (i+j); //to keep the quantity for the third asset
-             if (k >units[2])
+             
+             if (k >assets.get(2).units)
                break;
-             risk = calculateRiskLevel(i,j,k,riskLevels, totalInvestment); //calling the method that calculate Risk Level of each allocation
+               
+             portfolio = new Portfolio(i, j, k);
+             portfolio.calculatePortfolioEfficiency(assets,totalInvestment); // Calculate portfolio return and risk
+               
              
-             if (risk > riskTolerance) //comparing the risk level of this allocation to the risk given by the user
-                continue;
-                
-             expReturn = calculateExpectedReturn (i, j, k,expectedReturns,totalInvestment); //calling the method that calculate Expected Return of each allocation
-             
-             if (expReturn > expectedProtfolioReturn)  { //comparing the expected protfolio return of this allocation to the one given by the user
-                optimalAllocation[0] = i;
-                optimalAllocation[1] = j;
-                optimalAllocation[2] = k;
-                expectedProtfolioReturn = expReturn;
-                portfolioRiskLevel = risk;
+             if (portfolio.risk <= riskTolerance && portfolio.expectedReturn > maxReturn) {
+                        maxReturn = portfolio.expectedReturn;
+                        optimalPortfolio = portfolio;
              }
                  
           }    
-       }  
-     }
-     
-     public static double calculateRiskLevel(int i, int j, int k, double[] riskLevels,int totalInvestment)   {
-       return (((i*riskLevels[0])+(j*riskLevels[1])+(k*riskLevels[2]))/totalInvestment);
-     }
-     
-     public static double calculateExpectedReturn(int i, int j, int k, double[] expectedReturns, int totalInvestment)   {
-       return (((i*expectedReturns[0])+(j*expectedReturns[1])+(k*expectedReturns[2]))/totalInvestment);
-     }     
+       } 
+      return optimalPortfolio;   
+     } 
  }
