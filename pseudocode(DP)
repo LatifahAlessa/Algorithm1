@@ -1,4 +1,4 @@
-
+pseudocode algorithm for finding the composition of an optimal allocation of assets using Dynamic Programming Paradigm: 
 
 function DPOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
   // Initialize the dynamic programming table
