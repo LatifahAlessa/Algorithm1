@@ -87,10 +87,7 @@ private static class Asset {
          }
                   
          //calling the brute-force method
-         long startTime1 = System.nanoTime();
          Portfolio optimalPortfolio =bruteForceOptimizePortfolio(assets, totalInvestment, riskTolerance);
-         long endTime1 = System.nanoTime();
-         long Timer1 = endTime1 - startTime1;
          
          //printing the results
          System.out.println("Optimal Allocation by Brute-Force");
@@ -100,14 +97,10 @@ private static class Asset {
          }
          System.out.printf("Expected Portfolio Return: %.4f\n", optimalPortfolio.expectedReturn);
          System.out.printf("Portfolio Risk Level: %.4f\n", optimalPortfolio.risk);
-         System.out.println("Run time : "+ ((double)Timer1/1000000) + " milliseconds");
          
          
          //calling the DP method
-         long startTime = System.nanoTime();
          Portfolio optimalPortfolio2 =DPOptimizePortfolio(assets, totalInvestment, riskTolerance);
-         long endTime = System.nanoTime();
-         long Timer = endTime - startTime;
          
          //printing the results
          System.out.println("\nOptimal Allocation by Dynamic Programming");
@@ -117,7 +110,6 @@ private static class Asset {
          }
          System.out.printf("Expected Portfolio Return: %.4f\n", optimalPortfolio2.expectedReturn);
          System.out.printf("Portfolio Risk Level: %.4f\n", optimalPortfolio2.risk);
-         System.out.println("Run time : "+ ((double)Timer/1000000) + " milliseconds");
      }
      
      private static Portfolio bruteForceOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
