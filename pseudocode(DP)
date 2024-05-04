@@ -1,39 +1,42 @@
 pseudocode algorithm for finding the composition of an optimal allocation of assets using Dynamic Programming Paradigm: 
 
-function DPOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
-  // Initialize the dynamic programming table
-  Portfolio[][][] dp = new Portfolio[assets.get(0).units + 1][assets.get(1).units + 1][assets.get(2).units + 1];
+function DPOptimizePortfolio(assets, totalInvestment, riskTolerance):
+    optimalPortfolio = null
+    maxReturn = 0
+    dp = 2D array with dimensions (number of assets + 1) x (total investment + 1)
+    allocations = 3D array with dimensions (number of assets) x (number of assets + 1) x (total investment + 1)
 
-  // Iterate over all possible combinations of asset quantities
-  for (int i = 0; i <= assets.get(0).units; i++) {
-    for (int j = 0; j <= assets.get(1).units; j++) {
-      for (int k =0; k <= assets.get(2).units; k++) {
-        // Check if the current combination is valid
-        if (i + j + k == totalInvestment) {
-          // Create a new portfolio with the current combination
-          Portfolio portfolio = new Portfolio(i, j, k);
-          portfolio.calculatePortfolioEfficiency(assets, totalInvestment);
+    for i from 0 to number of assets:
+        for j from 0 to total investment:
+            dp[i][j] = Portfolio(0, 0, 0) // Initialize portfolio objects
+            dp[i][j].expectedReturn = 0
+            dp[i][j].risk = 0
 
-          // Check if the current portfolio is better than the current optimal portfolio
-          if (portfolio.risk <= riskTolerance && portfolio.expectedReturn > dp[i][j][k].expectedReturn) {
-            dp[i][j][k] = portfolio;
-          }
-        }
-      }
-    }
-  }
+    for i from 0 to total investment:
+        for k from 0 to number of assets:
+            allocations[k][0][i] = 0
 
-  // Find the optimal portfolio in the dynamic programming table
-  for (int i = 0; i <= assets.get(0).units; i++) {
-    for (int j = 0; j <= assets.get(1).units; j++) {
-      for (int k = 0; k <= assets.get(2).units; k++) {
-        if (dp[i][j][k].expectedReturn > dp[optimalPortfolio.allocation[0]][optimalPortfolio.allocation[1]][optimalPortfolio.allocation[2]].expectedReturn) {
-          optimalPortfolio = dp[i][j][k];
-        }
-      }
-    }
-  }
+    for i from 0 to number of assets:
+        for k from 0 to number of assets:
+            allocations[k][0][i] = 0
 
-  // Return the optimal portfolio
-  return optimalPortfolio;
-}
+    for i from 1 to number of assets:
+        for j from 1 to total investment:
+            maxUnits = minimum(assets[i-1].units, j)
+            for k from 0 to maxUnits:
+                riskLevel = (k * assets[i-1].individualrisk) / totalInvestment
+                expectedReturn = (k * assets[i-1].expectedReturn) / totalInvestment
+                maxvalue = maximum(dp[i][j].expectedReturn, dp[i-1][j-k].expectedReturn + expectedReturn)
+                
+                if maxvalue == dp[i][j].expectedReturn:
+                    continue
+                
+                if dp[i-1][j-k].risk + riskLevel <= riskTolerance:
+                    dp[i][j].expectedReturn = maxvalue
+                    dp[i][j].risk = dp[i-1][j-k].risk + riskLevel
+                    for m from 0 to number of assets:
+                        allocations[m][i][j] = allocations[m][i-1][j-k] + (i-m-1 == 0 ? k : 0)
+
+    set assets of dp[number of assets][total investment] using allocations
+
+    return dp[number of assets][total investment]
