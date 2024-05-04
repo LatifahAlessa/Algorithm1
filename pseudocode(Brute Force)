@@ -1,30 +1,26 @@
 pseudocode algorithm for finding the composition of an optimal allocation of assets using Brute Force Paradigm: 
 
-function bruteForceOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
-  // Initialize variables
-  Portfolio optimalPortfolio = null;
-  double maxReturn = 0;
+function bruteForceOptimizePortfolio(assets, totalInvestment, riskTolerance):
+    optimalPortfolio = null
+    maxReturn = 0
+    portfolio = Portfolio(0, 0, 0)
+    k = 0
 
-  // Iterate over all possible combinations of asset quantities
-  for (int i = 0; i <= assets.get(0).units; i++) {
-    for (int j = 0; j <= assets.get(1).units; j++) {
-      for (int k = 0; k <= assets.get(2).units; k++) {
-        // Check if the current combination is valid
-        if (i + j + k == totalInvestment) {
-          // Create a new portfolio with the current combination
-          Portfolio portfolio = new Portfolio(i, j, k);
-          portfolio.calculatePortfolioEfficiency(assets, totalInvestment);
+    for i from 0 to assets[0].units: // Loop for the first asset
+        for j from 0 to assets[1].units: // Loop for the second asset
+            if i + j > totalInvestment:
+                break
 
-          // Check if the current portfolio is better than the current optimal portfolio
-          if (portfolio.risk <= riskTolerance && portfolio.expectedReturn > maxReturn) {
-            maxReturn = portfolio.expectedReturn;
-            optimalPortfolio = portfolio;
-          }
-        }
-      }
-    }
-  }
+            k = totalInvestment - (i + j) // To keep the quantity for the third asset
 
-  // Return the optimal portfolio
-  return optimalPortfolio;
-}
+            if k > assets[2].units:
+                break
+
+            portfolio = Portfolio(i, j, k)
+            portfolio.calculatePortfolioEfficiency(assets, totalInvestment) // Calculate portfolio return and risk
+
+            if portfolio.risk <= riskTolerance and portfolio.expectedReturn > maxReturn:
+                maxReturn = portfolio.expectedReturn
+                optimalPortfolio = portfolio
+
+    return optimalPortfolio
