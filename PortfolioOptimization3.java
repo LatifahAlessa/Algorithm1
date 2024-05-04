@@ -151,51 +151,55 @@ private static class Asset {
      } 
      
      private static Portfolio DPOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
-         Portfolio optimalPortfolio = null;
          double maxReturn = 0;
-         Portfolio[][] dp = new Portfolio[assets.size()+1][totalInvestment +1]; // Dynamic programming table
-         int allocations[][][] = new int[assets.size()][assets.size()+1][totalInvestment +1];
-         double risklevel,expectedReturn;
-         //initilizer
-         for (int i =0; i<=assets.size(); i++)  {
-            for (int j = 0; j<=totalInvestment; j++)  {
-               dp[i][j] = new Portfolio(0,0,0);
-               dp[i][j].expectedReturn = 0;
-               dp[i][j].risk = 0;
-            }  
+
+         // Dynamic programming table
+         Portfolio[][] dp = new Portfolio[assets.size() + 1][totalInvestment + 1];
+         int[][][] allocations = new int[assets.size()][assets.size() + 1][totalInvestment + 1];
+
+         // Initialize dynamic programming table and allocations
+         for (int i = 0; i <= assets.size(); i++) {
+            for (int j = 0; j <= totalInvestment; j++) {
+                 dp[i][j] = new Portfolio(0, 0, 0);
+                 dp[i][j].expectedReturn = 0;
+                 dp[i][j].risk = 0;
+           }
          }
-         for (int i =0; i<=totalInvestment; i++)   
-            for (int k =0; k<assets.size(); k++)
-               allocations[k][0][i] =0;
-               
-         for (int i =0; i<=assets.size(); i++)   
-            for (int k =0; k<assets.size(); k++)
-               allocations[k][0][i] =0;
-         
-         for (int i =1; i<=assets.size(); i++)  {
-            for (int j =1; j<=totalInvestment; j++)  { 
-               int maxun = Math.min(assets.get(i-1).units,j);
-               for (int k = 0; k <= maxun;k++)  {
-                  risklevel = (k*assets.get(i-1).individualrisk)/totalInvestment;
-                  expectedReturn = (k*assets.get(i-1).expectedReturn)/totalInvestment;
-                  double maxvalue = Math.max(dp[i][j].expectedReturn,dp[i-1][j-k].expectedReturn+expectedReturn);
-                  
-                  if (maxvalue == dp[i][j].expectedReturn)
-                     continue;
+
+         // Dynamic programming
+         for (int i = 1; i <= assets.size(); i++) {
+             for (int j = 1; j <= totalInvestment; j++) {
+               int maxUnit = Math.min(assets.get(i - 1).units, j);
+               for (int k = 0; k <= maxUnit; k++) {
+                  double riskLevel = (k * assets.get(i - 1).individualrisk) / totalInvestment;
+                  double expectedReturn = (k * assets.get(i - 1).expectedReturn) / totalInvestment;
+                  double maxValue = Math.max(dp[i][j].expectedReturn, dp[i - 1][j - k].expectedReturn + expectedReturn);
+
+                  if (maxValue == dp[i][j].expectedReturn)
+                      continue;
+
+                  if (dp[i - 1][j - k].risk + riskLevel <= riskTolerance) {
+                      dp[i][j].expectedReturn = maxValue;
+                      dp[i][j].risk = dp[i - 1][j - k].risk + riskLevel;
+
+                  // Update allocations
+                  for (int m = 0; m < assets.size(); m++) 
+                     if (i - m - 1 == 0) 
+                         allocations[m][i][j] = allocations[m][i - 1][j - k] + k;
+                      else 
+                         allocations[m][i][j] = allocations[m][i - 1][j - k];
                      
-                  if (dp[i-1][j-k].risk +risklevel <=riskTolerance)  {
-                     dp[i][j].expectedReturn = maxvalue;
-                     dp[i][j].risk = dp[i-1][j-k].risk +risklevel; 
-                                         
-                     //
-                     for (int m =0; m<assets.size(); m++)
-                        allocations[m][i][j] = allocations[m][i-1][j-k] +(i-m-1 ==0? k:0);
+                  
+
                   }
                }
-            }
          }
-         dp[assets.size()][totalInvestment].setAssets( allocations[0][assets.size()][totalInvestment],allocations[1][assets.size()][totalInvestment], allocations[2][assets.size()][totalInvestment]);
-         return dp[assets.size()][totalInvestment];
-     
-     }
- }
+      }
+
+      // Set assets for the optimal portfolio
+      dp[assets.size()][totalInvestment].setAssets(allocations[0][assets.size()][totalInvestment],allocations[1][assets.size()][totalInvestment],allocations[2][assets.size()][totalInvestment]);
+
+      return dp[assets.size()][totalInvestment];
+   }
+
+}
