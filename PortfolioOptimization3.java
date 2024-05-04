@@ -143,8 +143,6 @@ private static class Asset {
      } 
      
      private static Portfolio DPOptimizePortfolio(List<Asset> assets, int totalInvestment, double riskTolerance) {
-         double maxReturn = 0;
-
          // Dynamic programming table
          Portfolio[][] dp = new Portfolio[assets.size() + 1][totalInvestment + 1];
          int[][][] allocations = new int[assets.size()][assets.size() + 1][totalInvestment + 1];
